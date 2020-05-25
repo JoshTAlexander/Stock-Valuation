@@ -3,6 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import re
+
+#get stock
+symbol = input("Enter stock symbol: ")
 
 #chrome setup
 my_path ="C:\\Users\\joshu\\Documents\\Uni Work\\YCS\\chromedriver.exe" #where chromedriver.exe is
@@ -10,7 +14,6 @@ browser = webdriver.Chrome(executable_path=my_path)
 
 #url setup
 url_form = "https://www.nasdaq.com/market-activity/stocks/{}/dividend-history"
-symbol = input("Enter stock symbol: ")
 url = url_form.format(symbol)
 browser.get(url)
 
@@ -37,26 +40,24 @@ def get_elements(xpath):
 currentdiv = get_elements("//html/body/div[2]/div/main/div/div[4]/div[1]/div/div[2]/ul/li[3]/span[2]/span")
 currentdiv = float(currentdiv[0].replace("$",""))
 
-#get div growth rate
-div1 = get_elements("//html/body/div[2]/div/main/div/div[4]/div[1]/div/div[2]/div[2]/div[2]/table/tbody/tr[3]/td[2]")
-div1 = float(div1[0].replace("$",""))
-div2 = get_elements("//html/body/div[2]/div/main/div/div[4]/div[1]/div/div[2]/div[2]/div[2]/table/tbody/tr[4]/td[2]")
-div2 = float(div2[0].replace("$",""))
-div3 = get_elements("//html/body/div[2]/div/main/div/div[4]/div[1]/div/div[2]/div[2]/div[2]/table/tbody/tr[5]/td[2]")
-div3 = float(div3[0].replace("$",""))
-div4 = get_elements("//html/body/div[2]/div/main/div/div[4]/div[1]/div/div[2]/div[2]/div[2]/table/tbody/tr[6]/td[2]")
-div4 = float(div4[0].replace("$",""))
-
-sumdiv = div1 + div2 + div3 + div4
-divgrowth = (currentdiv/sumdiv) -1
-
 #wacc
-waccul = "https://www.gurufocus.com/term/wacc/{}/WACC/"
-url = waccul.format(symbol)
+waccurl = "https://www.gurufocus.com/term/wacc/{}/WACC/"
+url = waccurl.format(symbol)
 browser.get(url)
 wacc = get_elements("//html/body/div[2]/div[2]/div/div/div/div[2]/font[1]")
 wacc = wacc[0].replace(":","")
 wacc = (float(wacc.replace("% As of Today","")))/100
+
+#get div growth rate
+divgrowthurl = "https://www.gurufocus.com/term/dividend_growth_3y/{}/3-Year-Dividend-Growth-Rate/"
+url = divgrowthurl.format(symbol)
+browser.get(url)
+divgrowth = get_elements("//html/body/div[2]/div[2]/div/div/div/div[2]/font[1]")
+m = re.search(': (.+?)%', divgrowth[0])
+if m:
+    found = m.group(1)
+divgrowth = found
+divgrowth = float(divgrowth)/100
 
 #calculation
 intrinsicprice=((currentdiv*(1+divgrowth))/(wacc - divgrowth))
@@ -71,5 +72,6 @@ if (price>float(intrinsicprice)):
     print ("(Over valued)")
 else:
     print ("(Under valued)")
+print("If negative then div growth>wacc")
 
 browser.quit()
