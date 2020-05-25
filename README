@@ -10,3 +10,5 @@ This model uses earnings per share and the price to earnings ratio to calaculate
 
 GORDONS:
 This model uses dividend growth and the working average cost of capital. NOTE DOES NOT WORK IF DIVIDENT GROWTH RATE IS > WACC
+
+DISCLAIMER: NOT FINANCIAL ADVISE
